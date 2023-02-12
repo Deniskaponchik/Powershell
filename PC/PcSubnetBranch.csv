@@ -1,0 +1,118 @@
+Name1;Name2;Name3;Name4;Subnet0;Subnet00;Subnet1;Subnet2;Subnet3;Subnet4;Subnet5;Branch;Town;Macro
+wsab;nbab;;;;;10.54.179.;10.12.137.;;;;Abakan;Abakan;Сибирь
+wsar;nbar;;;10.77.60.0/25    ;;10.77.60.;;;;;Arkhangelsk;Arkhangelsk;Северо-Запад
+wsar;nbar;;;10.77.61.192/28               ;;10.77.61.;;;;;Arkhangelsk;Kotlas;Северо-Запад
+wsbn;nbbn;;;;;10.71.179.;;;;;Barnaul;;Сибирь
+wsbe;nbbe;;;10.77.49.0/25    ;;10.77.49.;;;;;Belgorod;;Черноземье
+wsbb;nbbb;;;10.77.180.0/25;;10.77.180.;;;;;Birobidzhan;;Байкал и Дальний Восток
+wsbr;nbbr;;;10.77.100.0/25  ;;10.77.100.;;;;;Bryansk;;Черноземье
+wsbr;nbbr;;;10.77.101.64/28               ;;10.77.101.;;;;;Bryansk;Bryansk_B2B_Office;Черноземье
+wsvn;nbvn;;;;;10.77.64.;;;;;Veliky Novgorod;;Северо-Запад
+wsvk;nbvk;;;;;10.88.179.;;;;;Vladivostok;;Дальний Восток
+wsvl;nbvl;;;10.77.148.0/25  ;;10.77.148.;;;;;Vladimir;;Центр
+wsvd;nbvd;;;;;10.62.177.;;;;;Volgograd;;Юг
+wsva;nbva;;;10.77.132.0/25  ;;10.77.132.;;10.34.177.;;;Vologda;;Северо-Запад
+wsva;nbva;;;10.77.133.96/2  ;10.77.133.64/27               ;10.77.133.;;;;;Vologda;Cherepovec / MSC;Северо-Запад
+wsvo;nbvo;;;;;10.77.112.;;;;;Voronezh;;Черноземье
+wssc;nbsc;;;;;10.77.204.;10.77.205.;10.77.206.;10.77.207.;;Voronezh-SSC;;ЦФ
+wsek;nbek;;;;;10.69.178.;;;;;Ekaterinburg;;Урал
+wsiv;nbiv;;;;;10.127.177.;;;;;Ivanovo;;Центр
+wsiz;nbiz;;;10.77.20.0/25    ;;10.77.20.;;;;;Izhevsk;;Волга
+wsir;nbir;;;;;10.57.178.;10.57.179.;10.57.180.;;;Irkutsk;Irkutsk_Sverdlova;Байкал и Дальний Восток
+wsir;nbir;;;10.57.182.0/25;;10.57.182.;;;;;Irkutsk;Irkutsk_TechPloshadka;Байкал и Дальний Восток
+wsir;nbir;;;;;10.57.183.;;;;;Irkutsk;Bratsk             ;Байкал и Дальний Восток
+wszi;nbzi;;;;;10.57.184.;10.57.185.;;;;CC-Irkutsk;;ЦФ
+wsyo;nbyo;;;;;10.90.177.;10.90.178.;;;;Yoshkar-Ola;Yoshkar-Ola;Волга
+wsyo;nbyo;;;10.90.179.0/29  ;;10.90.179.;;;;;Yoshkar-Ola;YO_For;Волга
+wskz;nbkz;;;10.65.181.0/27  ;;10.65.181.;;;;;Kazan;N.Chelny;Волга
+wskz;nbkz;;;;;10.65.182.;10.65.183.;10.65.184.;;;Kazan;Kazan_New office;Волга
+wskz;nbkz;;;10.65.185.0/26  ;;10.65.185.;;;;;Kazan;AIM;Волга
+wskg;nbkg;;;10.77.136.0/25  ;;10.77.136.;;;;;Kaliningrad;;Северо-Запад
+wska;nbka;;;10.77.120.0/25  ;;10.77.120.;;;;;Kaluga;;Центр
+wske;nbke;;;10.77.36.0/22;;10.77.36.;10.77.37.;10.77.38.;10.77.39.;;Kemerovo;Kemerovo;Сибирь
+wsnk;nbnk;;;;;10.77.52.;;;;;Kemerovo;Novokuznetsk;Сибирь
+wski;nbki;;;10.77.156.0/25  ;;10.77.156.;;;;;Kirov;;Волга
+wsks;nbks;;;10.77.128.0/25  ;;10.77.128.;;;;;Kostroma;;Центр
+wskr;nbkr;;;;;10.77.81.;;;;;Krasnodar;Krasnodar_Office;Юг
+wskr;nbkr;;;10.77.84.0/25    ;;10.77.84.;;;;;Krasnodar;sochi;Юг
+wskr;nbkr;;;;;10.21.177.;;;;;Krasnodar;Krasnodar_New_Office;Юг
+wsky;nbky;;;10.55.178.0;;10.55.178.;;;;;Krasnoyarsk;Krasnoyarsk;Сибирь
+wsky;nbky;;;10.55.187.128;;10.55.187.;;;;;Krasnoyarsk;Eniseysk                      ;Сибирь
+wsky;nbky;;;10.55.188.64;;10.55.188.;;;;;Krasnoyarsk;Lesosibirsk ;Сибирь
+wsky;nbky;;;10.55.188.128;;10.55.188.;;;;;Krasnoyarsk;Achinsk         ;Сибирь
+wsky;nbky;;;10.55.189.0/28;;10.55.189.;;;;;Krasnoyarsk;kmto;Сибирь
+wsky;nbky;;;10.55.189.16/28;;10.55.189.;;;;;Krasnoyarsk;Minusinsk;Сибирь
+wsky;nbky;;;10.55.189.64;;10.55.189.;;;;;Krasnoyarsk;Boguchany;Сибирь
+wsky;nbky;;;;;10.55.189.;;;;;Krasnoyarsk;;Сибирь
+wsky;nbky;;;;;10.55.191.;;;;;Krasnoyarsk;Norilsk;Сибирь
+wskn;nbkn;;;10.94.177.0/27  ;;10.94.177.;;;;;Kurgan;;Урал
+wsku;nbku;;;10.77.32.0/25    ;;10.77.32.;;;;;Kursk;;Черноземье
+wsli;nbli;;;10.77.24.0/25    ;10.77.25.128/26               ;10.77.24.;10.77.25.;;;;Lipetsk;Lipetsk_Office / Lipetsk_Office 2;Черноземье
+wsmd;nbmd;;;;;10.77.188.;;;;;Magadan;;Байкал и Дальний Восток
+WSMO;NBMO;;;;;;;;;;Moscow;;Центр
+WSMS;NBMS;;;;;;;;;;Moscow-MCC;;ЦФ
+WSMS;NBMS;WSMO;NBMO;10.68.176.0/21  ;;10.68.176.;10.68.177.;10.68.178.;10.68.179.;10.68.180.;Moscow AND Moscow-MCC;MSK Office-LAN;ЦФ
+WSMS;NBMS;WSMO;NBMO;;10.77.4.0/25                      ;10.68.181.;10.68.182.;;10.77.4.;10.2.177.;Moscow AND Moscow-MCC;MSK Office-LAN;ЦФ
+WSMS;NBMS;WSMO;NBMO;10.77.172.0/22  ;;10.77.172.;10.77.173.;10.77.174.;10.77.175.;;Moscow AND Moscow-MCC;MSK Corp-WiFi / Servers2 / Printers;ЦФ
+WSMS;NBMS;WSMO;NBMO;10.2.185.208/28               ;;10.2.185.;10.2.186.;10.2.187.;10.2.188.;10.2.189.;Moscow AND Moscow-MCC;MSK Cisco-ISE / MEDIA / SERVERS / DNA;ЦФ
+wsmu;nbmu;;;10.77.56.0/25    ;10.77.57.128/27               ;10.77.56.;;10.77.57.;;;Murmansk;Murmansk_Office;Северо-Запад
+wsnn;nbnn;wsrn;nbrn;10.87.176.0/20;;;;10.87.178.;10.87.179.;10.87.182.;Nizhniy Novgorod;;Волга
+wscn;nbcn;;;10.87.176.0/20;;10.87.177.;10.87.180.;10.87.181.;;10.87.185.;Nizhny Novgorod-CP;;ЦФ
+wscn-nocmon;nbcn-nocmon;;;;;;;;10.87.184.;;Nizhny Novgorod-NOC;;ЦФ
+wsns;nbns;wsrs;nbrs;;10.77.29.0/25;10.77.28.;10.77.29.;;;;Novosibirsk;;Сибирь
+wsom;nbom;;;;;10.77.41.;;;;;Omsk       ;;Сибирь
+wscp;nbcp;;;10.77.42.128/25;;10.77.42.;10.78.42.;;;;Omsk-CP;;ЦФ
+wsor;nbor;;;10.77.116.0/25  ;;10.77.116.;;;;;Oryol;;Черноземье
+wsob;nbob;;;;;10.59.179.;;;;;Orenburg;;Урал
+wspn;nbpn;;;;;10.84.180.;;;;;Penza;;Черноземье
+wspr;nbpr;;;;;10.93.177.;;;;;Perm;PR-Office;Урал
+wspr;nbpr;;;10.93.181.0/26  ;;10.93.181.;;;;;Perm;PR-Office-tech;Урал
+wspt;nbpt;;;10.77.152.0/25;;10.77.152.;;;;;Petrozavodsk;Petrozavodsk_Clients;Северо-Запад
+wspp;nbpp;;;10.77.192.0/25;;10.77.192.;;;;;Petropavlovsk-Kamchatsky;;Байкал и Дальний Восток
+wsps;nbps;;;10.77.160.0/25  ;;10.77.160.;;;;;Pskov;;Северо-Запад
+WSRO;NBRO;;;;;10.77.0.;;;;;Rostov-on-Don;Rostov-on-Don Region;Юг
+WSRU;NBRU;;;;;;;;;;Central;;ЦФ
+wsru;nbru;wsro;nbro;;;10.1.177.;;;;;Central & Rostov-on-Don;CBIT AND REGION;ЦФ
+wsru;nbru;;;;;10.77.44.;10.77.237;;;;Central;CBIT;ЦФ
+wsru;nbru;;;10.1.180.0/23;;10.1.180.;10.1.181.;10.78.251.;10.78.252.;10.78.253.;Central;CBIT;ЦФ
+wsru;nbru;;;10.1.179.0/25;;10.1.179.;;;;;Central;CBIT HR;ЦФ
+wsru-NOC;nbru-NOC;;;;;10.12.12.;;;;;Rostov-on-Don NOC;CBIT NOC;ЦФ
+wszr;nbzr;;;;;10.77.232.;10.77.233.;10.77.234.;10.77.235.;10.77.236.;CC-Rostov;;ЦФ
+wsry;nbry;;;10.77.124.0/25  ;;10.77.124.;;;;;Ryazan;;Центр
+wssh;nbsh;;;10.97.177.0/25  ;;10.97.177.;;;;;Salekhard;Salekhard;Урал
+wssh;nbsh;;;;;10.97.178.;;;;;Salekhard;;Урал
+wssh;nbsh;;;10.97.179.0/29  ;;10.97.179.;;;;;Salekhard;Salekhard_ForTeh;Урал
+wssh;nbsh;;;10.97.180.0/28  ;;10.97.180.;;;;;Salekhard;Nadym;Урал
+wssa;nbsa;;;;;10.63.177.;;;;;Samara;Samara;Волга
+wssa;nbsa;;;10.63.179.64/27               ;;10.63.179.;;;;;Samara;Syzran;Волга
+wssa;nbsa;;;10.63.179.128/26             ;;10.63.179.;;;;;Samara;Tolyatti;Волга
+wsst;nbst;;;;;;;;;;Stavropol;;Юг
+wssp;nbsp;wsrp;nbrp;10.3.176.0/20;;10.3.176.;10.3.177.;10.3.178.;10.3.179.;10.3.180.;Saint-Petersburg;;Северо-Запад
+wssp;nbsp;wsrp;nbrp;;;10.3.184.;10.3.185.;10.3.186.;10.3.187.;10.3.188.;Saint-Petersburg;;Северо-Запад
+wssp;nbsp;wsrp;nbrp;;;10.3.189.;10.3.190.;10.3.191.;;;Saint-Petersburg;;Северо-Запад
+wszs;nbzs;;;;;10.60.183.;10.60.184.;10.60.185.;10.60.186.;;СС-Saransk;;ЦФ
+wssn;nbsn;;;;;10.60.188.;;;;;Saransk;;Черноземье
+wssr;nbsr;;;;;10.86.177.;;;;;Saratov;;Черноземье
+wssm;nbsm;;;10.77.12.0/25    ;;10.77.12.;;;;;Smolensk;;Центр
+wssy;nbsy;;;10.77.69.0/25    ;;10.77.69.;;;;;Syktyvkar;Syktyvkar.User;Северо-Запад
+wssy;nbsy;;;10.77.71.128/26               ;;10.77.71.;;;;;Syktyvkar;Syktyvkar_Remote;Северо-Запад
+wssy;nbsy;;;10.77.71.192/27               ;;10.77.71.;;;;;Syktyvkar;Uhta;Северо-Запад
+wsta;nbta;;;10.77.140.0/25  ;;10.77.140.;;;;;Tambov;;Черноземье
+wstv;nbtv;;;10.77.144.0/25  ;;10.77.144.;;;;;Tver;;Центр
+wsto;nbto;;;10.77.109.0/25;;10.77.109.;;;;;Tomsk;;Сибирь
+wstl;nbtl;wsrt;nbrt;;;10.77.104.;10.27.177.;;;;Tula;;Центр
+wstm;nbtm;;;;;10.95.177.;;;;;Tumen;;Урал
+wsuu;nbuu;;;;;10.56.177.;;;;;Ulan-Ude;;Байкал и Дальний Восток
+wsul;nbul;;;10.72.178.0/23  ;;10.72.178.;10.72.179.;;;;Ulyanovsk;UL_Office;Волга
+wsul;nbul;;;;;10.72.180.;;;;;Ulyanovsk;UL_VLAN64;Волга
+wsrh;nbrh;;;;;10.253.16.;;;;;Khabarovsk;;Байкал и Дальний Восток
+wsha;nbha;;;10.96.178.0/25  ;;10.96.178.;10.96.179.;10.96.180.;;;Khanty-Mansiysk;Khanty-Mansiysk;Урал
+wsha;nbha;;;10.96.181.0/27  ;;10.96.181.;;;;;Khanty-Mansiysk;N-Vartovsk;Урал
+wsha;nbha;;;;;10.96.182.;;;;;Khanty-Mansiysk;Surgut;Урал
+wscb;nbcb;;;;;10.74.177.;;;;;Cheboksary;;Волга
+wsch;nbch;;;;;10.24.177.;;;;;Chelyabinsk;;Урал
+wszc;nbzc;;;10.78.232.0/22;;10.78.232.;10.78.233.;10.78.234.;10.78.235.;;CC-Chelyabinsk;;ЦФ
+wsus;nbus;;;10.77.184.0/25;;10.77.184.;;;;;Yuzhno-Sakhalinsk;;Байкал и Дальний Восток
+wsyr;nbyr;;;;;10.91.177.;;;;;Yaroslavl;;Центр
+;;;;10.12.;;;;;;;VPN;;
+Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;Stop;
