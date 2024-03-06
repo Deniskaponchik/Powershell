@@ -1,10 +1,10 @@
-﻿# Version: 0.29
-# STATUS: РАБОТАЕТ
-# Цель: помощь в Обработке обращений System Monitoring Auto Create на очистку ПК
-# реализация: БД MS SQL Server на WSIR-IT-01, БД MySQL Server на T2Ru-GLPI-01 
+﻿# Version:      0.29
+# STATUS:       РАБОТАЕТ
+# Цель:         помощь в Обработке обращений System Monitoring Auto Create
+# реализация:   БД MS SQL Server на WSIR-IT-01, БД MySQL Server на T2Ru-GLPI-01 
 # проблемы:
-# Планы: Подключение к шине bpm
-# Author: denis.tirskikh@tele2.ru
+# Планы:        Подключение к шине bpm
+# Author:       denis.tirskikh@tele2.ru
 
 
   [Environment]::NewLine
@@ -64,6 +64,7 @@ $SRnumber = Read-Host "Вставь НОМЕР тикета, по котором
 $SRlink = Read-Host "Вставь ССЫЛКУ на тикет, по которому ведёшь работу сейчас"
 
 
+
 [Environment]::NewLine
 Write-Host "1. Заканчивается место на диске C:"
 Write-Host "2. Увеличить ОЗУ"
@@ -105,11 +106,9 @@ $IncidentType  #>
 
 
 
-
-# Поиск групп ответсвенных в зависимости от имени машины
+# Поиск групп ответственных в зависимости от имени машины
 [Environment]::NewLine
 $PCut = $PC.Substring(0,4)
-
 
 <# РАБОЧЕЕ. Убираю в связи с переход на подключение к БД WSIR-IT-01/ITsupport
 # Добавить это инфо в сравнительный файл:
@@ -281,7 +280,6 @@ $ITmacro = $Null
     "Не удалось определить ответственную группу ИТ. необходимо занести в базу регион"}
 #>
 
-
 # Определение сервисных инженеров на основании имени машины:
 [Environment]::NewLine
 . \\t2ru\folders\IT-Outsource\Scripts\PowerShell\DataBase\SQL\WSIRit01_RegionCodes_v0.1.ps1
@@ -313,7 +311,7 @@ PCinfo -PC $PC
 
 
 
-<#
+<#'Последние 5 залогинившихся пользователей. СТАРОЕ
   [Environment]::NewLine
   'Последние 5 залогинившихся пользователей:'
   $wcusers = "\\$PC\C$\Users\"
@@ -334,11 +332,8 @@ PCinfo -PC $PC
   # Если возникнет доселе не описанная ошибка, то вывести её на экран:
   elseif ($NotAccessC) {$NotAccessC}
   #>
-
-
   
-# Запрос пользователя, которого не удалять ни при каких условиях
-# НОВОЕ
+# Запрос пользователя, которого не удалять ни при каких условиях. НОВОЕ
 Write-Host 'Введи в поле нижe ФИО или логин пользователя, чей профиль не будет удаляться в рамках данного скрипта' -ForegroundColor Green
 #. \\t2ru\folders\IT-Outsource\Scripts\PowerShell\Users\UserLogin_v0.4.ps1
  . \\t2ru\folders\IT-Outsource\Scripts\PowerShell\Users\UserLogin_v0.5.ps1
@@ -361,10 +356,6 @@ try {
 catch {
     Write-Host 'Контактные данные пользователя не удалось скопировать в буфер обмена' -ForegroundColor RED `n
 }
-
-
-
-
 
 
 
@@ -571,7 +562,7 @@ Switch ($Choice) {
 
 
 
-<# Вывод информации о машине:
+<# Вывод информации о машине. СТАРОЕ
 [Environment]::NewLine
 Write-Host $PC -ForegroundColor Yellow
 
@@ -675,7 +666,9 @@ else {
     }
  }
 
-<#
+
+
+<### Устаревшая ОС или билд  ###
 [Environment]::NewLine
 if (($OS.Caption  + $OS.CSDVersion) -like '*Windows 7*') {
 Write-Host "Необходимо ОБЯЗАТЕЛЬНО в рамках данного тикета предпринять ВСЕ возможные меры, чтобы избавиться от Windows 7" -ForegroundColor Red `n
@@ -688,7 +681,8 @@ Set-Clipboard -Value 'Необходимо также обновить сист�
 Pause}
 #>
 
-#$DateStart = Get-Date  # Фиксируем время начала отработки скрипта
+
+
 <# Отключение гибернации (ЦИКЛ):
 $x = 2
 do {  # $DomainCred -eq $Null
@@ -717,7 +711,7 @@ else {
     $ErrAct1 = 'Гибернация не была выключена и файл гибернации не смог удалиться'}
 #>
 
-# Отключение гибернации (ПРОСТОЕ):
+### Отключение гибернации (ПРОСТОЕ) ###
 # $PC = 'wsir-it-01'
 # Write-Host "Запрос прав администратора домена (admin.ws.)" -ForegroundColor Red
 # $AdmWSDomCred = Get-Credential
@@ -736,8 +730,8 @@ catch {
 
 
 
-# Отключение ведение журнала записи отладочной информации при краше системы:
-# $PC = 'wsir-it-01'    $PC = '
+### Отключение ведение журнала записи отладочной информации при краше системы ###
+#$PC = 'wsir-it-01'
 try {
   Get-WmiObject -Class Win32_OSRecoveryConfiguration -ComputerName $PC -EnableAllPrivileges | Set-WmiInstance -Arguments @{ DebugInfoType=0 }
 # Set-WmiInstance -Class Win32_OSRecoveryConfiguration -ComputerName $PC -Arguments @{ DebugInfoType=1 }
@@ -751,7 +745,7 @@ catch {
 
 
 
-################################################### 
+#######   Удаление папок/профилей неиспользуемых пользователей   #################### 
 <# Вывести размер профиля каждого пользователя в папке C:\Users :
 # Get-ChildItem -force 'C:\Users'-ErrorAction SilentlyContinue | ? { $_ -is [io.directoryinfo] } | % {
   Get-ChildItem $wcUsers -Force -ErrorAction SilentlyContinue | Where-Object { $_ -is [io.directoryinfo] } | ForEach-Object {  $len = 0
@@ -759,10 +753,6 @@ catch {
   ($_.fullname).Split("\")[-1], '{0:N2} GB' -f ($len / 1Gb)
   $sum = $sum + $len  }
   “Общий размер профилей”,'{0:N2} GB' -f ($sum / 1Gb)  #>
-
-
-
-
 
 <# Удаление папок/профилей неиспользуемых пользователей #1:
 $wcusers = "\\$PC\C$\Users\"
@@ -828,9 +818,15 @@ foreach ($UF in $UserPropsfol) {
     [Environment]::NewLine}       
 }
 #>
+<# Удаление папок/профилей неиспользуемых пользователей #4. Get-CimInstance заместо gwmi
+Get-CimInstance -ClassName Win32_UserProfile -ComputerName $PC | Where-Object {(!$_.Special) -and ($_.ConvertToDateTime($_.LastUseTime) -lt (Get-Date).AddDays(-90))} | Measure-Object
+(Get-CimInstance -ClassName Win32_OperatingSystem).InstallDate
+$fuc = (Get-CimInstance -ClassName Win32_UserProfile).LastUseTime
+$fuc = (Get-CimInstance -ClassName Win32_UserProfile -ComputerName $PC).LastUseTime
+#>
 
 
-###############################################
+#######   ОЧИСТКА РАЗЛИЧНЫХ ПАПОК В РАЗНЫХ ЧАСТЯХ СИСТЕМЫ   #################
 # Дата с которой сравнивать. В этом случае -15 дней от текущей даты
 # $TEMPdate = (Get-Date).AddDays(-10)
 # Или дата кастомная. Пустые значения будут взяты из текущего времени и даты
@@ -843,23 +839,29 @@ foreach ($UF in $UserPropsfol) {
     $wcdump2 = "\\$PC\C$\Windows\minidump\*"
   $wcUpdate1 = "\\$PC\C$\Windows\SoftwareDistribution\Download\*"
 # $wcUpdate2 = "\\$PC\C$\Windows\SoftwareDistribution\DataStore\*" # Папка не большая и удалять не очень хочется
-  $wcUpdate3 = "\\$PC\C$\Windows\ccmcache\*"    # Настравиается размер кэша SCCM в корне Панели управления
+  $wcUpdate3 = "\\$PC\C$\Windows\ccmcache\*"                       # размер кэша SCCM не меняю. Только чистка
         $LCU = "\\$PC\C$\Windows\servicing\LCU\*"
     $TempWin = "\\$PC\C$\Windows\temp\*"
 #  $Prefetch = "\\$PC\C$\Windows\Prefetch\*"  # Никогда не вешает больше 50 мб      
 
-   $TempLocal = "\\$PC\C$\Users\*\Appdata\Local\Temp\*"
-  $CrashDumps = "\\$PC\C$\Users\*\Appdata\Local\CrashDumps\*"
-  $TempChrome = "\\$PC\C$\Users\*\AppData\Local\Google\Chrome\User Data\Default\Code Cache\js\*"
- $CrashTableu = "\\$PC\C$\Users\*\Documents\My Tableau Repository\Logs\crashdumps\*"
-#   $wsSketch = "\\$PC\C$\Users\*\AppData\Local\Microsoft\Windows\Explorer\*         # Эскизы Windows
-#               "\\$PC\C$\Users\*\AppData\Local\Microsoft\Terminal Server Client\Cache\*”
-#               "\\$PC\C$\Users\*\AppData\Local\Microsoft\Windows\Explorer\*"
+     $TempLocal = "\\$PC\C$\Users\*\Appdata\Local\Temp\*"
+    $CrashDumps = "\\$PC\C$\Users\*\Appdata\Local\CrashDumps\*"
+ $ChromeCacheJS = "\\$PC\C$\Users\*\AppData\Local\Google\Chrome\User Data\Default\Code Cache\js\*"
+   $ChromeCache = "\\$PC\C$\Users\*\AppData\Local\Google\Chrome\User Data\Default\Cache\Cache_Data\*"
+ $YandexCacheJS = "\\$PC\C$\Users\*\AppData\Local\Yandex\YandexBrowser\User Data\Default\Code Cache\js\*"
+   $YandexCache = "\\$PC\C$\Users\*\AppData\Local\Yandex\YandexBrowser\User Data\Default\Cache\Cache_Data\*"
+   $EdgeCacheJS = "\\$PC\C$\Users\*\AppData\Local\Microsoft\Edge\User Data\Default\Code Cache\js\*"
+     $EdgeCache = "\\$PC\C$\Users\*\AppData\Local\Microsoft\Edge\User Data\Default\Cache\Cache_Data\*"
+#     $wsSketch = "\\$PC\C$\Users\*\AppData\Local\Microsoft\Windows\Explorer\*         # Эскизы Windows
+#                 "\\$PC\C$\Users\*\AppData\Local\Microsoft\Windows\Explorer\*"
+#                 "\\$PC\C$\Users\*\AppData\Local\Microsoft\Terminal Server Client\Cache\*”
+
+$CrashTableu = "\\$PC\C$\Users\*\Documents\My Tableau Repository\Logs\crashdumps\*"
 
 $wctelemetry = "\\$PC\C$\ProgramData\Microsoft\Diagnosis\ETLLogs\*"
   $Bartender = "\\$PC\c$\ProgramData\Seagull\System\Database\Backup\*"
 
-#$wcDLPagent = "\\$PC\C$\Program Files\Manufacturer\Endpoint Agent\temp\"
+#$wcDLPagent = "\\$PC\C$\Program Files\Manufacturer\Endpoint Agent\temp\"  #Если есть подтверждение, что папка бывает большой, то можно снять
 
   $wcoldwin1 = "\\$PC\C$\Windows.ol*\Users\*.*\"
   $wcoldwin2 = "\\$PC\C$\Windows.ol*\"
@@ -878,7 +880,7 @@ if ($ErrDelWinOld) {$ErrDelWinOld = "Папка Windows.Old не смогла у
 
 # $ForDelFold = @($wcoldwin1, $wcoldwin2, $wcdump1, $wcdump2, $wcUpdate1, $wctemp1, $wctemp2)
 # $ForDelFold = @($wcdump1, $wcdump2, $wcUpdate1, $wctemp1, $wctemp2)
-  $ForDelFold = $wcdump1, $wcdump2, $wcUpdate1, $wcUpdate3, $TempWin, $TempC, $TempLocal, $CrashDumps, $TempChrome, $CrashTableu, $LCU, $wctelemetry, $Bartender, $SetupHpSw, $SetupSw
+  $ForDelFold = $wcdump1, $wcdump2, $wcUpdate1, $wcUpdate3, $TempWin, $TempC, $TempLocal, $CrashDumps, $ChromeCacheJS, $ChromeCache, $YandexCacheJS, $YandexCache, $EdgeCacheJS, $EdgeCache, $CrashTableu, $LCU, $wctelemetry, $Bartender, $SetupHpSw, $SetupSw
 # $ForDelFold = @($wcdump1, $wcdump2, $wcUpdate1)
 # Remove-Item $tempfolders -force -recurse -verbose #-ErrorAction SilentlyContinue
   Remove-Item $ForDelFold -force -recurse -verbose #-ErrorAction SilentlyContinue
@@ -886,9 +888,7 @@ if ($ErrDelWinOld) {$ErrDelWinOld = "Папка Windows.Old не смогла у
 # Remove-Item "\\wssp-e-nazarova\c$\ProgramData\Seagull\System\Database\Backup\" -force -recurse -verbose
 # Remove-Item "D:\Work PC\1\Удалить\DeleteSoftIB\" -force -recurse -verbose
 
-
-
-<# Кэши браузеров (при желании можно чуть допилить и реализовать, но необходимо закрывать браузеры понадобится, скорее всего):
+<# Кэши браузеров (при желании можно чуть допилить и реализовать, но понадобится закрывать браузеры, скорее всего):
 # Mozilla Firefox
 C:\Users\%USERNAME%\AppData\Local\Mozilla\Firefox\Profiles\*
 C:\Users\%USERNAME%\AppData\Roaming\Mozilla\Firefox\Profiles\*
@@ -938,39 +938,34 @@ C:\Users\%USERNAME%\AppData\Roaming\Microsoft\Windows\Cookies
 
 
 
-<# Советуют использовать этот командлет заместо gwmi :
-Get-CimInstance -ClassName Win32_UserProfile -ComputerName $PC | Where-Object {(!$_.Special) -and ($_.ConvertToDateTime($_.LastUseTime) -lt (Get-Date).AddDays(-90))} | Measure-Object
-(Get-CimInstance -ClassName Win32_OperatingSystem).InstallDate
-$fuc = (Get-CimInstance -ClassName Win32_UserProfile).LastUseTime
-$fuc = (Get-CimInstance -ClassName Win32_UserProfile -ComputerName $PC).LastUseTime
+### Очистка в папке Загрузки файлов старше 10 дней ###
+[Environment]::NewLine
+#$PC = 'wsir-IT-01'
+#$PC = 'nbir-sarma'
+$DownFolders = "\\$PC\C$\Users\*\Downloads\"
+$DownFoldFiles = Get-ChildItem $DownFolders -Force -recurse
+$Add10Days = (Get-Date).AddDays(-10)
 
+foreach ($DFS in $DownFoldFiles) {  
+  Write-Host $DFS
+  if ($DFS.lastwritetime -lt $Add10Days){
+    $DFSlwt = $DFS.lastwritetime
+    Write-Host "Дата изменения: $DFSlwt"
 
-Get-Date $fucdate[1]
-Get-WMIObject -class Win32_UserProfile -ComputerName $PC | Where-Object {(($_.Special) -ne $true) -and ($_.ConvertToDateTime($_.LastUseTime))} | ($_.LastUseTime).ConvertToDateTime
-Get-WMIObject -class Win32_UserProfile -ComputerName $PC | $_.ConvertToDateTime($_.LastUseTime)
-Get-WMIObject -class Win32_UserProfile -ComputerName $PC | Where-Object {($_.ConvertToDateTime($_.LastUseTime))} # | Out-GridView
+    #$FilePath = -join($DFC.directory , "\" , $DFC.name)
+    #Write-Host $FilePath -ForegroundColor Red
 
-# выведем список пользователей, профиль которых не использовался более 90 дней.
-Get-WMIObject -class Win32_UserProfile -ComputerName $PC | Where-Object {(!$_.Special) -and ($_.ConvertToDateTime($_.LastUseTime) -lt (Get-Date).AddDays(-90))} | Measure-Object
-# Удалить все эти профили:
-Get-WMIObject -class Win32_UserProfile | Where-Object {(!$_.Special) -and (!$_.Loaded) -and ($_.ConvertToDateTime($_.LastUseTime) -lt (Get-Date).AddDays(-90))} | Remove-WmiObject –WhatIf
-#Список аккаунтов, чьи профили нельзя удалять
-$ExcludedUsers ="Public","Administrator","Администратор",'$UserProp','Default'
-$LocalProfiles=Get-WMIObject -class Win32_UserProfile | Where-Object {(!$_.Special) -and (!$_.Loaded) -and ($_.ConvertToDateTime($_.LastUseTime) -lt (Get-Date).AddDays(-90))}
-foreach ($LocalProfile in $LocalProfiles)
-# {if (!($ExcludedUsers -like $LocalProfile.LocalPath.Replace("C:\Users\",""))){
-  {if (!($ExcludedUsers -like $LocalProfile.LocalPath.Replace($wc+'Users',""))){
-$LocalProfile | Remove-WmiObject
-Write-host $LocalProfile.LocalPath, "профиль удален" -ForegroundColor Magenta
-}}
-КОНЕЦ ШЛАКА #>
-
+    #Remove-Item -Path $FilePath -force -verbose -confirm
+     Remove-Item $DFS -force -verbose #-confirm
+    #Start-Sleep -Seconds 600
+    #[Environment]::NewLine
+  }
+}
+[Environment]::NewLine #
 
 
 
-
-
-#####   КОРЗИНА    ##############
+#####   КОРЗИНА   #########
 <# Уменьшим корзину (нужно включать Удалённый реестр)
 $Size=1024     # Size in MB
 # $Volume=mountvol C:\ /L 
@@ -1007,33 +1002,6 @@ Get-RecycleBinSize -ComputerName $PC -Drive C: -Empty
 #>
 
 
-
-
-### Очистка в папке Загрузки файлов старше 10 дней ###
-[Environment]::NewLine
-#$PC = 'wsir-IT-01'
-#$PC = 'nbir-sarma'
-$DownFolders = "\\$PC\C$\Users\*\Downloads\"
-$DownFoldFiles = Get-ChildItem $DownFolders -Force -recurse
-$Add10Days = (Get-Date).AddDays(-10)
-
-foreach ($DFS in $DownFoldFiles) {  
-  Write-Host $DFS
-  if ($DFS.lastwritetime -lt $Add10Days){
-    $DFSlwt = $DFS.lastwritetime
-    Write-Host "Дата изменения: $DFSlwt"
-
-    #$FilePath = -join($DFC.directory , "\" , $DFC.name)
-    #Write-Host $FilePath -ForegroundColor Red
-
-    #Remove-Item -Path $FilePath -force -verbose -confirm
-     Remove-Item $DFS -force -verbose #-confirm
-    #Start-Sleep -Seconds 600
-    #[Environment]::NewLine
-  }
-}
-[Environment]::NewLine
-#
 
 
 
@@ -1075,7 +1043,7 @@ $wsService.Start()
 ### УДАЛЕНИЕ 20 САМЫХ БОЛЬШИХ ФАЙЛОВ НА ДИСКЕ С ###
 start-job -scriptblock {
     $wshell = New-Object -ComObject Wscript.Shell
-    $wshell.Popup("Запущено сканирование диска C: на поиск 20 самых больших файлов. Это может занять продолжительное время. По некоторым директориям будут возникать ошибки про отсутсвие доступа. Ничего страшного.")
+    $wshell.Popup("Запущено сканирование диска C: на поиск 20 самых больших файлов. Это может занять продолжительное время в зависимости от размера диска. По некоторым директориям будут возникать ошибки про отсутствие доступа. Это последний этап очистки. Если данная активность не интересна, можешь прервать скрипт.")
 }
 
 #$PC = 'wsir-IT-01'
@@ -1083,6 +1051,7 @@ $DriveC = "\\$PC\C$\"
 #$DriveC = "\\$PC\C$\Intel\"
 $BiggestFilesOnC = Get-ChildItem $DriveC -Force -recurse | sort -descending -property length | select -first 20 
 #directory, name, @{Name="Gigabytes";Expression={[Math]::round($_.length / 1GB, 2)}}
+#$BiggestFilesOnC
 
 [Environment]::NewLine
 Write-Host "!!!" -ForegroundColor Red
@@ -1113,12 +1082,14 @@ foreach ($BFC in $BiggestFilesOnC) {
   Write-Host $FilePath -ForegroundColor Red
 
   $Size = [Math]::round($BFC.length / 1GB, 2)
-  Write-Host "Size in Gygabyte: $Size"  -ForegroundColor Red
+  Write-Host "Size in Gygabyte: $Size" -ForegroundColor Red
+
+  $bfcLWT = $BFC.LastWriteTime
+  Write-Host "Last Write Time: $bfcLWT" -ForegroundColor Red
   
   Remove-Item -Path $FilePath -force -verbose -confirm
   [Environment]::NewLine
-}
-#
+} #
 
 
 
@@ -1169,4 +1140,3 @@ $DateEnd - $DateStart | Select-Object Days, Hours, Minutes | Out-Host
   } 
   #else { $FeedBack  }
   ScriptsExecute -Operation Update -AdminLogin $AdminLogin -DateStart $DateStart -DateEnd $DateEnd -Feedback $FeedBack -ScriptName $ScriptName
-
