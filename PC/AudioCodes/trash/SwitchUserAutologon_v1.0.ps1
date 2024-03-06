@@ -1,10 +1,10 @@
-﻿# Version:      0.0
+﻿# Version:      1.0
 # STATUS:       НЕ протестировано
-# Цель:         Быстрая смена пользователя, под которым автологиниться
+# Цель:         Смена пользователя, под которым автологиниться ДЛЯ УЧЁТОК С ПАРОЛЕМ
 # реализация:   
 # проблемы:     
 # Планы:        
-# Last Update:  Все функции в принципе добавлены. нужно проверять
+# Last Update:  нужно проверять
 # Author:       denis.tirskikh@tele2.ru
 
 
@@ -26,16 +26,38 @@ catch {
     $UserAutoLogin = Read-Host "Write Skype or TrueConf for autologon setting "
     $UserAutoLogin
 } while (    
-    ($UserAutoLogin -ne "Skype") -and ($UserAutoLogin -ne "TrueConf")
+    ($UserAutoLogin -ne "Skype") -and ($UserAutoLogin -ne "TrueConf") -and ($UserAutoLogin -ne "Test")
 )
+
+$PasswordUser = Read-Host "Write password for user "
+
 #Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -PropertyType "DWord" -Value "0"
- $RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+
+#Всегда остаётся таким. Не меняем:
 #Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String
+
  Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$UserAutoLogin" -type String
-#Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "" -type String
+
+#$PasswordBoth = ""
+#$PasswordSkype = ""
+#$PasswordTrueConf = ""
+#если для любой учётки, какой бы она ни была, есть пароль:
+ Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$PasswordUser" -type String
+
+<# Случай, когда для учётки Skype нет пароля, а для TrueConf есть
+if ($UserAutoLogin -eq "Skype"){
+    #Remove-ItemProperty $RegistryPath 'DefaultPassword' -force
+     Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$PasswordSkype" -type String
+}
+if ($UserAutoLogin -eq "TrueConf"){
+    #New-ItemProperty $RegistryPath 'DefaultPassword' -Value "$tcpwdunsecur" -type String
+     Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$PasswordTrueConf" -type String
+}
+#>
 
 #Write-Host "Для пользователя $UserAutoLogin установлен Автолог в систему без пароля" -ForegroundColor Green
-Write-Host "For user $UserAutoLogin set autologon in the system without password" -ForegroundColor Green
+Write-Host "For user $UserAutoLogin set autologon in the system with password" -ForegroundColor Green
 [Environment]::NewLine
 PAUSE
 
@@ -56,5 +78,6 @@ try {
     Restart-Computer -Confirm -Force
 }
 catch {
-    Write-Host "команда перезагрузки не смогла выполниться корректно. Можешь сделать это самостоятельно" -ForegroundColor Red
+    #Write-Host "команда перезагрузки не смогла выполниться корректно. Можешь сделать это самостоятельно" -ForegroundColor Red
+    Write-Host "The command for reboot could not run. You can make it manually" -ForegroundColor Red
 }

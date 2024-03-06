@@ -1,10 +1,10 @@
 ﻿# Version:      0.0
-# STATUS:       Протестировано на 1 устройстве
+# STATUS:       Протестировано на 0 устройств
 # Цель:         первоначальная настройка систем ВКС AudioCodes
 # реализация:   
 # проблемы:     Белый список брандмауэра практически не создан + проверить запуск SCCM клиента
 # Планы:        Протестировать на бОльшем кол-ве устройств
-# Last Update:  Возможность локального логона для учётки TrueConf
+# Last Update:  Добавлены пароли для уз TrueConf и Skype
 # Author:       denis.tirskikh@tele2.ru
 
 
@@ -36,7 +36,7 @@ catch {
 #Restart-Computer
 
 # Полная локализация Windows: https://www.outsidethebox.ms/22149/
-Install-Language ru-RU
+Install-Language ru-RU -CopyToSettings
 Set-WinUILanguageOverride ru-RU
 $List = Get-WinUserLanguageList
 $List.Add("ru-RU")
@@ -53,14 +53,13 @@ Write-Host "System language changed to RUSSIAN" -ForegroundColor Green
 [Environment]::NewLine
 PAUSE
 
-<# Язык teams
-#при первом заходе не срабатывает. Отключаю.
+# Язык teams. При первом заходе не срабатывает. Отключаю.
 c:\Rigel\x64\scripts\provisioning\scriptlaunch.ps1 ApplyCurrentRegionAndLanguage.ps1
 #Write-Host "Язык teams изменён на руский" -ForegroundColor Green
 Write-Host "Teams language changed to RUSSIAN" -ForegroundColor Green
 [Environment]::NewLine
 PAUSE
-#>
+#
 
 #CHECK. Функция для смены имени машины
 #Write-Host "Укажи новое имя компьютера" -ForegroundColor RED
@@ -87,12 +86,27 @@ PAUSE
  
 
 #CHECK. Создаём пользователя TrueConf
- New-LocalUser "TrueConf" -NoPassword -UserMayNotChangePassword -AccountNeverExpires | Set-LocalUser -PasswordNeverExpires $true
-#$tcpwdunsecur = "TeleTK2#"
-#$tcpwdsecur = ConvertTo-SecureString "TeleTK2#" -AsPlainText -Force
+#без пароля
+#New-LocalUser "TrueConf" -NoPassword -UserMayNotChangePassword -AccountNeverExpires | Set-LocalUser -PasswordNeverExpires $true
+
+#$Password = Read-Host "Enter the new password" -AsSecureString
+ $tcpwdunsecur = "TeleTK2#"
+ $tcpwdsecur = ConvertTo-SecureString $tcpwdunsecur -AsPlainText -Force
+ New-LocalUser "TrueConf" -Password $tcpwdsecur -UserMayNotChangePassword -AccountNeverExpires | Set-LocalUser -PasswordNeverExpires $true
 #New-LocalUser "Test" -Password $tcpwdsecur -UserMayNotChangePassword -AccountNeverExpires | Set-LocalUser -PasswordNeverExpires $true
-#
-Write-Host "User TrueConf was created successfully" -ForegroundColor Green
+
+Write-Host "User TrueConf was created successfully with password TeleTK2#" -ForegroundColor Green
+[Environment]::NewLine
+PAUSE
+
+
+#Меняем пароль от УЗ Skype
+$SkypePwdUnsecur = "TeleTK2#"
+$SkypePwdSecur = ConvertTo-SecureString $SkypePwdUnsecur -AsPlainText -Force
+Set-LocalUser -Name Skype -Password $SkypePwdSecur
+
+Write-Host "For Skype user set password TeleTK2#" -ForegroundColor Green
+Write-Host "All Teams shell settings has been reset" -ForegroundColorRed
 [Environment]::NewLine
 PAUSE
 
@@ -144,8 +158,7 @@ for($i=0; $i -lt $settings.Count; $i++){
        [Environment]::NewLine
    }
 
-   #Доступ к компьютеру из сети
-   #SeRemoteInteractiveLogonRigh - НЕ ПРАВИЛЬНО
+   #Доступ к компьютеру из сети. SeRemoteInteractiveLogonRigh - НЕ ПРАВИЛЬНО
    if($settings[$i] -match "SeNetworkLogonRight"){
 
         $settings[$i] += ",*$($sidTrueConf.Value),*$($sidSkype.Value)"
@@ -163,23 +176,31 @@ for($i=0; $i -lt $settings.Count; $i++){
        #>
    }
 
-   #Удалённое принудительное завершение работы - SeRemoteShutdownPrivilege
+   #Удалённое завершение работы. Не работает
+   if($settings[$i] -match "SeRemoteShutdownPrivileget"){
 
-   #SeShutdownPrivilege
-   
+    $settings[$i] += ",*$($sidTrueConf.Value),*$($sidSkype.Value)"
+    Write-Host "For users TrueConf and Skype was added Remote Shutdown right policy" -ForegroundColor Green
+    [Environment]::NewLine
+    }
+
+   #Локальное завершение работы. Не работает
+   if($settings[$i] -match "SeShutdownPrivileget"){
+
+    $settings[$i] += ",*$($sidTrueConf.Value)"
+    Write-Host "For users TrueConf was added Shutdown right policy" -ForegroundColor Green
+    [Environment]::NewLine
+    }
+
 }  
 $settings | Out-File $tmp  
 secedit.exe /configure /db secedit.sdb /cfg $tmp  /areas User_RIGHTS  
 Remove-Item -Path $tmp
-
 [Environment]::NewLine
 PAUSE
 
-
-
-#Allow local logon
+<#Allow local logon. WORK. DOESN'T EDIT!!!
 #https://learn.microsoft.com/en-us/answers/questions/349374/how-to-update-security-group-policy-allow-log-on-l
-<#ORIGINAL. WORK. DOESN'T EDIT!!!
 $user = "TrueConf"
 #$user = "Test"
 $tmp = [System.IO.Path]::GetTempFileName()  
@@ -207,9 +228,11 @@ PAUSE
 
 
 #CHECK. Добавим в Пользователи удалённого рабочего стола
-#Возможность подключения по RDP без пароля
-#0 - allow; 1 - deny
-#Reg.Exe add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa" /v LimitBlankPasswordUse /t REG_DWORD /d 0 /f
+#Возможность подключения по RDP без пароля. 0 - allow; 1 - deny
+Reg.Exe add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Lsa" /v LimitBlankPasswordUse /t REG_DWORD /d 0 /f
+Write-Host "Allowed Remote Logon for users without password" -ForegroundColor Green
+[Environment]::NewLine
+
 <#
 try {    
     Add-LocalGroupMember -Group 'Remote Desktop Users' -Member Test –Verbose
@@ -259,32 +282,42 @@ PAUSE
 #New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System" -Name "InactivityTimeoutSecs" -PropertyType "DWord" -Value "0"
 
 
- #CHECK. Автологин без пароля
- do {
+#Автологин 
+do {
     #$UserAutoLogin = Read-Host "Укажи имя учётной записи Skype или TrueConf, в которую настроить автологин "
     $UserAutoLogin = Read-Host "Write Skype or TrueConf for autologon setting "
     $UserAutoLogin
 } while (    
     ($UserAutoLogin -ne "Skype") -and ($UserAutoLogin -ne "TrueConf")
 )
+#$PasswordUser = Read-Host "Input password for user "
+$PasswordUser = "TeleTK2#"
+
 #Set-ItemProperty -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name "AutoAdminLogon" -PropertyType "DWord" -Value "0"
- $RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+
 #Всегда остаётся таким. Не меняем:
 #Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String
 
 #Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "Test" -type String
  Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$UserAutoLogin" -type String
-<# 
+
+#если для любой учётки, какой бы она ни была, есть пароль:
+ Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$PasswordUser" -type String
+
+<# Случай, когда для учётки Skype нет пароля, а для TrueConf есть
 if ($UserAutoLogin -eq "Skype"){
     Remove-ItemProperty $RegistryPath 'DefaultPassword' -force
 }
 if ($UserAutoLogin -eq "TrueConf"){
-    New-ItemProperty $RegistryPath 'DefaultPassword' -Value "$tcpwdunsecur" -type String
+    #New-ItemProperty $RegistryPath 'DefaultPassword' -Value "$tcpwdunsecur" -type String
+    #CHECK. Будет ли работать SET, если ранее не была создана запись?
+    Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$tcpwdunsecur" -type String
 }
 #>
 
 #Write-Host "Для пользователя $UserAutoLogin установлен Автологин в систему без пароля" -ForegroundColor Green
-Write-Host "For user $UserAutoLogin set autologon in the system without password" -ForegroundColor Green
+Write-Host "For user $UserAutoLogin set autologon in the system with password" -ForegroundColor Green
 [Environment]::NewLine
 PAUSE
 
@@ -441,8 +474,100 @@ catch {
 PAUSE
 [Environment]::NewLine 
 
-#Kaspersky
-#Предполагаю, что будет установлен вручную
+
+#CHECK. Kaspersky. Агент администрирования
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720978
+try {
+    #1.В CMD от имени администратора перейти в папку с Kaspersky Network Agent.msi (например NetAgent_10.5.1781(4)\exec)
+    #2. выполнить в CMD от имени администратора рабочей станции
+    #Для установки приложения в тихом режиме используйте ключи /s и /qn
+    #"Kaspersky Network Agent.msi"
+    msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_14.2.0.26967\exec\Kaspersky Network Agent.msi" /qn /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
+    #не тихая установка не работает:
+    #msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_14.2.0.26967\exec\Kaspersky Network Agent.msi" /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
+    Write-Host "Command for install Kaspersky Agent was run" -ForegroundColor Green
+    [Environment]::NewLine
+    #PAUSE
+
+    #3.По желанию, проверить лог C:\Windows\Temp\nag_inst.log должен заканчиваться нулем
+    Write-Host "You can see log" -ForegroundColor Green
+    #D:\Logs\ping.txt
+    C:\Windows\Temp\nag_inst.log
+    [Environment]::NewLine
+    #PAUSE
+
+    #4. Проверить утилитой что связь появилась - отправить пакет пульс
+    $PathKasperPuls = "C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klrbtagt.exe"
+
+    Write-Host "Check puls connection" -ForegroundColor Green
+    Start-Process -FilePath $PathKasperPuls
+    [Environment]::NewLine
+    #PAUSE
+
+    #!! Ключ тихой установки для НОУТБУКА находящемся за пределами офисной сети - не использовать при локальном подключении!
+    #msiexec.exe /i "Kaspersky Network Agent.msi" /qn /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1 GATEWAYMODE=2 GATEWAYADDRESS=kscgw01.tele2.ru
+
+    Write-Host "Kaspersky Agent was install successfully" -ForegroundColor Green
+    Write-Host "KES will install after some time automatically" -ForegroundColor Green
+    #Write-Host "Now you can install KES manually from:" -ForegroundColor Green
+    #Write-Host "C:\AudioCodes\Kaspersky\KES_12.2.0.462" -ForegroundColor Green
+}
+catch {
+    Write-Host "Kaspersky was NOT installed" -ForegroundColor RED
+    Write-Host "Check log. Open:" -ForegroundColor RED
+    Write-Host "C:\Windows\Temp\nag_inst.log" -ForegroundColor RED
+
+}
+[Environment]::NewLine
+PAUSE
+
+<#DISABLE. Kaspersky. Endpoint Security
+#Установится сам через какое-то время после установки Агента
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=1121052
+#https://support.kaspersky.ru/kes12/123468
+try {
+    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup.exe
+
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
+
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pALLOWREBOOT=1
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pENABLETRACES=1 /pTRACESLEVEL=600 /s
+
+    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
+
+
+    #msiexec /i <distribution kit name> EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1] [SKIPPRODUCTCHECK=1] [KLLOGIN=<user name> KLPASSWD=<password> KLPASSWDAREA=<password scope>] [ENABLETRACES=1|0 TRACESLEVEL=<tracing scope>] [/qn]
+
+    #msiexec /i kes_win.msi EULA=1 PRIVACYPOLICY=1 KSN=1 KLLOGIN=Admin KLPASSWD=Password KLPASSWDAREA=EXIT;DISPOLICY;UNINST /qn
+
+    #msiexec /i "C:\AudioCodes\Kaspersky\KES_12.2.0.462\exec\kes_win.msi" EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1|0] [SKIPPRODUCTCHECK=1|0] [SKIPPRODUCTUNINSTALL=1|0] [KLLOGIN=<имя пользователя> KLPASSWD=<пароль> KLPASSWDAREA=<область действия пароля>] [ENABLETRACES=1|0 TRACESLEVEL=<уровень трассировки>] [/qn]
+
+}
+catch {
+    Write-Host "Kaspersky Endpoint Security was NOT installed" -ForegroundColor RED
+    Write-Host "Check log. Open:" -ForegroundColor RED
+    Write-Host "C:\Windows\Temp\???????????.log" -ForegroundColor RED
+    [Environment]::NewLine
+}
+#>
+
+
+<#TrueConf Client
+try {
+}
+catch {
+}
+#>
+
+
+<#TrueConf Room
+try {
+}
+catch {
+}
+#>
 
 
 
@@ -479,9 +604,10 @@ Write-Host "denis.tirskikh@tele2.ru"
 PAUSE
 
 
+
 #CHECK. Локальный администратор
 $NewLocalAdminLogin = "AdminTele25"
-<#Путь с созданием отдельной УЗ
+<#Создание новой отдельной УЗ администратора
 #$AdminPassword = Read-Host 'Задай пароль локального администратора: Tele2#adm' –AsSecureString
  $AdminPassword = ConvertTo-SecureString "Tele25s@pport" -AsPlainText -Force
 #Set-LocalUser -Name "Администратор" -Password $AdminPassword -Verbose
@@ -536,7 +662,7 @@ PAUSE
     -replace '#Hostname=WillChangeFromScript', "Hostname=$PcNewName"`
     -replace '#HostMetadata=WillChangeFromScript', "HostMetadata=Region=$Region:UserLogin=$UserLogin:RoomName=$RoomName:IsVcs=true:VcsType=$VcsType" | 
     Out-File $PathZabbixConf #zabbix_agentd.conf
-    #>
+#>
 
 
 
