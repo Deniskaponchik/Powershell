@@ -1,4 +1,4 @@
-﻿# Version:      0.0
+# Version:      0.0
 # STATUS:       Протестировано на 0 устройств
 # Цель:         первоначальная настройка систем ВКС AudioCodes
 # реализация:   https://wiki.tele2.ru/pages/viewpage.action?pageId=315167075
@@ -24,10 +24,11 @@ $loginTrueConf = "TrueConf"
 $loginSkype = "Skype"
 #$loginTest = "Test"
 
-$TcClientVersion = "8.3.2"
-$tcRoomVersion = "4.3.0.1341"
+$TcClientVersion = "8.4.0.1925" #"8.3.2"
+$tcRoomVersion = "4.3.0.1515"   #"4.3.0.1341"
 $ChromeVersion = "ChromeStandaloneSetup64"
-$KasperAgentVersion = "14.2.0.26967"
+#$KasperAgentVersion = "14.2.0.26967"
+$KasperAgentVersion = "14.2.0.26967(3)"
 [Environment]::NewLine
 
 
@@ -88,6 +89,30 @@ $TimeZone
 [Environment]::NewLine
 #PAUSE
 
+#Синхронизация времени
+try{
+    #net time \\server_name_to_synch_with /set
+    #net time ntp1.tele2.ru /set    net time ntp2.tele2.ru /set    net time ntp3.tele2.ru /set
+    try {
+        net start w32time
+    }
+    catch {
+        Write-Host "Windows Time service run" -ForegroundColor Green
+    }
+    [Environment]::NewLine
+
+    #https://stackoverflow.com/questions/17507339/setting-ntp-server-on-windows-machine-using-powershell
+    #https://ab57.ru/cmdlist/w32tm.html
+    #w32tm /config /syncfromflags:manual /manualpeerlist:"0.pool.ntp.org 1.pool.ntp.org 2.pool.ntp.org 3.pool.ntp.org"
+    w32tm /config /syncfromflags:manual /manualpeerlist:"ntp1.tele2.ru ntp2.tele2.ru ntp3.tele2.ru" /update
+    #w32tm /resync [/nowait] [/rediscover] [/soft] [/computer: <компьютер>]
+
+    Write-Host "Time setting was syncronized with ntp servers successfully" -ForegroundColor Green
+}catch{
+    Write-Host "Time setting was not syncronized with ntp servers" -ForegroundColor Red
+}
+#
+
 try {
     #Set-TimeZone -Id "UTC"
     Set-TimeZone -Id $TimeZone -Verbose -ErrorAction Stop -ErrorVariable ErrChangeTimeZone
@@ -126,7 +151,7 @@ Set-WinHomeLocation -GeoId 203;
 # Windows 11. https://www.outsidethebox.ms/22149/
 try {
     #$LogFile = "D:\WorkPC\1\log.log"
-    Install-Language ru-RU -CopyToSettings -Verbose -ErrorVariable ErrInstallLanguage 
+    Install-Language ru-RU -CopyToSettings -Verbose #-ErrorVariable ErrInstallLanguage 
     #$ErrInstallLanguage | Tee-Object -file $LogFile -Append
 
     Set-WinUILanguageOverride ru-RU -Verbose
@@ -159,11 +184,15 @@ try {
 catch {
     #$LogFile = "D:\WorkPC\1\log.log"
     $OutText1 = "System language was NOT changed to RUSSIAN"
-    $OutText2 = "You must istall last update from Windows Update and try again"
+    $OutText2 = "You can:"
+    $OutText3 = "Install russian language mannually now or later"
+    $OutText4 = "OR istall last update from Windows Update and try again run this script later"
     
     #$OutText1, $OutText2 | Out-File -FilePath $LogFile -Append
     Write-Host $OutText1 -ForegroundColor Red
     Write-Host $OutText2 -ForegroundColor Red
+    Write-Host $OutText3 -ForegroundColor Red
+    Write-Host $OutText4 -ForegroundColor Red
 
     #Для борьбы с ошибкой: "the term install-language is not recognized as the name of a cmdlet, function"
     <#Все эти пакеты ниже или не помогают или не протестированы до конца
@@ -204,6 +233,7 @@ Write-Host "where" -ForegroundColor RED
 Write-Host "XX           - 2 letter code from AD" -ForegroundColor RED
 Write-Host "ConfRoomName - Name of conf room" -ForegroundColor RED
 Write-Host "Name length must contains max 15 letters" -ForegroundColor RED
+Write-Host "Example:  VCSIR-SELENGA" -ForegroundColor RED
 do {
     #$PcNewName = Read-Host "Укажи Новое имя "
     $PcNewName = Read-Host "New Hostname "
@@ -250,17 +280,66 @@ catch {
 PAUSE
 
 #Добавление пользователя TrueConf в администраторы
+#$loginTrueConf = "TrueConf"
 try {    
     #Add-LocalGroupMember -Group 'Пользователи удаленного рабочего стола' -Member Skype –Verbose
-    Add-LocalGroupMember -Group 'Administrators' -Member $loginTrueConf –Verbose
+    Add-LocalGroupMember -Group 'Administrators' -Member $loginTrueConf –Verbose -ErrorVariable ErrAddAdmin1 -ErrorAction Stop
+
     Write-Host "$loginTrueConf was added to Administrators" -ForegroundColor Green
-    Write-Host "!!! DON'T FORGET DELETE $loginTrueConf FROM ADMINISTRATORS AFTER TrueConf Room CONFIGURATION !!!" -ForegroundColor Red 
-    [Environment]::NewLine
+    Write-Host "!!! DON'T FORGET REMOVE $loginTrueConf FROM ADMINISTRATORS AFTER TrueConf Room CONFIGURATION !!!" -ForegroundColor Red 
 }
 catch {    
-    #"Skype уже добавлен в пользователи удалённого рабочего стола"  
-    Write-Host "$loginTrueConf was NOT added to Administrators" -ForegroundColor Red 
+    try {
+        Add-LocalGroupMember -Group 'Администраторы' -Member $loginTrueConf –Verbose -ErrorVariable ErrAddAdmin2 -ErrorAction Stop
+
+        Write-Host "$loginTrueConf добавлен в группы Администраторы" -ForegroundColor Green
+        Write-Host "!!! Не забудь удалить $loginTrueConf из Администраторов ПОСЛЕ настройки TrueConf Room !!!" -ForegroundColor Red
+    }
+    catch {
+        Write-Host "$loginTrueConf was NOT added to Administrators" -ForegroundColor Red
+        Write-Host "For TrueConf Room configuration you can add local user $loginTrueConf to Administrators mannually" -ForegroundColor Red
+    }
 }
+[Environment]::NewLine
+
+
+#Доступ учётке TrueConf для WMI, чтобы считать кол-во подключенных мониторов
+Function Set-WMIPermissions {
+    Param (
+        [String]$Namespace = 'WMI', #'CIMV2',
+        [String]$Account   = $loginTrueConf, #'lab\Domain users',
+        [String]$Computer  = $env:COMPUTERNAME
+    )
+
+    Function Get-Sid {
+        Param (
+            $Account
+        )
+        $ID = New-Object System.Security.Principal.NTAccount($Account)
+        Return $ID.Translate([System.Security.Principal.SecurityIdentifier]).toString()
+    }
+
+    $SID = Get-Sid $Account
+    $SDDL = "A;CI;CCSWWP;;;$SID"
+    $DCOMSDDL = "A;;CCDCRP;;;$SID"
+    $Reg = [WMICLASS]"\\$Computer\root\default:StdRegProv"
+    $DCOM = $Reg.GetBinaryValue(2147483650,'software\microsoft\ole','MachineLaunchRestriction').uValue
+    $Security = Get-WmiObject -ComputerName $Computer -Namespace "root\$Namespace" -Class __SystemSecurity
+    $Converter = New-Object System.Management.ManagementClass Win32_SecurityDescriptorHelper
+    $BinarySD = @($null)
+    $Result = $Security.PsBase.InvokeMethod('GetSD', $BinarySD)
+    $OutSDDL = $Converter.BinarySDToSDDL($BinarySD[0])
+    $OutDCOMSDDL = $Converter.BinarySDToSDDL($DCOM)
+    $NewSDDL = $OutSDDL.SDDL += '(' + $SDDL + ')'
+    $NewDCOMSDDL = $OutDCOMSDDL.SDDL += '(' + $DCOMSDDL + ')'
+    $WMIbinarySD = $Converter.SDDLToBinarySD($NewSDDL)
+    $WMIconvertedPermissions = ,$WMIbinarySD.BinarySD
+    $DCOMbinarySD = $Converter.SDDLToBinarySD($NewDCOMSDDL)
+    $Result = $Security.PsBase.InvokeMethod('SetSD', $WMIconvertedPermissions)
+    $Result = $Reg.SetBinaryValue(2147483650,'software\microsoft\ole','MachineLaunchRestriction', $DCOMbinarySD.binarySD)
+    Write-Verbose 'WMI Permissions set'
+}
+[Environment]::NewLine
 
 
 #Меняем пароль от УЗ Skype
@@ -460,26 +539,38 @@ catch {
     #"$NewLocalAdminLogin уже добавлен в пользователи удалённого рабочего стола"
     #"$NewLocalAdminLogin was added to Remote Desktop Users"
     Write-Host "Admin was NOT added to Remote Desktop Users" -ForegroundColor Red
-}#>
-try {    
-    #Add-LocalGroupMember -Group 'Пользователи удаленного рабочего стола' -Member Skype –Verbose
-    Add-LocalGroupMember -Group 'Remote Desktop Users' -Member Skype –Verbose
+}
+#>
+try {
+    Add-LocalGroupMember -Group 'Remote Desktop Users' -Member Skype –Verbose -ErrorVariable ErrAddSkypeRemote1 -ErrorAction Stop
     Write-Host "Skype was added to Remote Desktop Users" -ForegroundColor Green
-    [Environment]::NewLine
 }
-catch {    
-    #"Skype уже добавлен в пользователи удалённого рабочего стола"  
-    Write-Host "Skype was NOT added to Remote Desktop Users" -ForegroundColor Red 
+catch {
+    try {
+        Add-LocalGroupMember -Group 'Пользователи удаленного рабочего стола' -Member Skype –Verbose -ErrorVariable ErrAddSkypeRemote2 -ErrorAction Stop
+        Write-Host "Skype добавлен в Пользователи удаленного рабочего стола" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Skype was NOT added to Remote Desktop Users" -ForegroundColor Red
+        Write-Host "You can do that mannually later" -ForegroundColor Red
+    }     
 }
-try {    
-    #Add-LocalGroupMember -Group 'Пользователи удаленного рабочего стола' -Member TrueConf –Verbose  
-    Add-LocalGroupMember -Group 'Remote Desktop Users' -Member TrueConf –Verbose
-    Write-Host "TrueConf was added to Remote Desktop Users" -ForegroundColor Green
-    [Environment]::NewLine
+[Environment]::NewLine
+PAUSE
+
+try {     
+    Add-LocalGroupMember -Group 'Remote Desktop Users' -Member $loginTrueConf –Verbose -ErrorVariable ErrAddTcRemote1 -ErrorAction Stop
+    Write-Host "$loginTrueConf was added to Remote Desktop Users" -ForegroundColor Green
 }
-catch {    
-    #"TrueConf уже добавлен в пользователи удалённого рабочего стола"
-    Write-Host "TrueConf was NOT added to Remote Desktop Users" -ForegroundColor Red
+catch {
+    try {
+        Add-LocalGroupMember -Group 'Пользователи удаленного рабочего стола' -Member $loginTrueConf –Verbose -ErrorVariable ErrAddTcRemote2 -ErrorAction Stop
+        Write-Host "$loginTrueConf добавлен в Пользователи удаленного рабочего стола" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "$loginTrueConf was NOT added to Remote Desktop Users" -ForegroundColor Red
+        Write-Host "You can do that mannually later" -ForegroundColor Red
+    }     
 }
 [Environment]::NewLine
 PAUSE
@@ -569,6 +660,8 @@ catch {
 }
 [Environment]::NewLine
 #PAUSE
+
+
 
 #CHECK.Проверить ещё эту штуку, если по-прежнему будут проблемы с авторизацией команд:
 #Write-Host "Проверь, заработал ли WinRM, перед тем, как продолжать скрипт и включать дополнительную опцию для этого" -ForegroundColor RED
@@ -693,7 +786,6 @@ do{
             }catch{
                 Write-Host $ErrFindMail -ForegroundColor Red
             }
-
         }catch{
             Write-Host "The Connection to LDAP is NOT established" -ForegroundColor Red
             Write-Host "Check skype sign in address" -ForegroundColor Red
@@ -757,15 +849,16 @@ PAUSE
 
 
 #####  Установка ПО  #####
+
 #ZABBIX
 try {
     Write-Host "Zabbix config" -ForegroundColor Magenta
     [Environment]::NewLine
 
-    C:\AudioCodes\Zabbix\ConfigZabbix_v0.1.ps1 -Language ENG -Hostname $PcNewName
-
+    C:\AudioCodes\Zabbix\ConfigZabbix_v0.1.ps1 -Language ENG -Hostname $PcNewName #-ErrorVariable ErrZabInstall
 }
 catch {
+    #Write-Host $ErrZabInstall -ForegroundColor RED
     Write-Host "Zabbix config script was NOT started" -ForegroundColor RED
     Write-Host "Check files in the directory:" -ForegroundColor RED
     Write-Host "C:\AudioCodes\Zabbix\" -ForegroundColor RED
@@ -799,87 +892,11 @@ PAUSE
 [Environment]::NewLine 
 
 
-#CHECK. Kaspersky. Агент администрирования
-#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
-#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720978
-try {
-    #1.В CMD от имени администратора перейти в папку с Kaspersky Network Agent.msi (например NetAgent_10.5.1781(4)\exec)
-    #2. выполнить в CMD от имени администратора рабочей станции
-    #Для установки приложения в тихом режиме используйте ключи /s и /qn
-    #"Kaspersky Network Agent.msi"
-    msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\exec\Kaspersky Network Agent.msi" /qn /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
-    #громкая установка не работает:
-    #msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\exec\Kaspersky Network Agent.msi" /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
-    Write-Host "Command for install Kaspersky Agent was run" -ForegroundColor Green
-    [Environment]::NewLine
-    Start-Sleep -Seconds 15
-    PAUSE    
-    
 
-    <#Отключаю. Не срабатывает
-    #4. Проверить утилитой что связь появилась - отправить пакет пульс
-    $PathKasperPuls = "C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klrbtagt.exe"
-
-    Write-Host "Check puls connection" -ForegroundColor Green
-    Start-Process -FilePath $PathKasperPuls
-    [Environment]::NewLine
-    #PAUSE
-    #>
-
-    Write-Host "Kaspersky Agent was install successfully" -ForegroundColor Green
-    Write-Host "KES will install after some time automatically" -ForegroundColor Green
-    #Write-Host "Now you can install KES manually from:" -ForegroundColor Green
-    #Write-Host "C:\AudioCodes\Kaspersky\KES_12.2.0.462" -ForegroundColor Green
-}
-catch {
-    Write-Host "Kaspersky was NOT installed" -ForegroundColor RED
-    Write-Host "Check log. Open:" -ForegroundColor RED
-    Write-Host "C:\Windows\Temp\nag_inst.log" -ForegroundColor RED
-
-}
-[Environment]::NewLine
-PAUSE
-
-#3.По желанию, проверить лог C:\Windows\Temp\nag_inst.log должен заканчиваться нулем
-Write-Host "You can see Kaspersky Agent installing log" -ForegroundColor Green
-#D:\Logs\ping.txt
-C:\Windows\Temp\nag_inst.log
-[Environment]::NewLine
-PAUSE
-
-<#DISABLE. Kaspersky. Endpoint Security
-#Установится сам через какое-то время после установки Агента
-#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
-#https://wiki.tele2.ru/pages/viewpage.action?pageId=1121052
-#https://support.kaspersky.ru/kes12/123468
-try {
-    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup.exe
-
-    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
-
-    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pALLOWREBOOT=1
-    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pENABLETRACES=1 /pTRACESLEVEL=600 /s
-
-    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
-
-
-    #msiexec /i <distribution kit name> EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1] [SKIPPRODUCTCHECK=1] [KLLOGIN=<user name> KLPASSWD=<password> KLPASSWDAREA=<password scope>] [ENABLETRACES=1|0 TRACESLEVEL=<tracing scope>] [/qn]
-
-    #msiexec /i kes_win.msi EULA=1 PRIVACYPOLICY=1 KSN=1 KLLOGIN=Admin KLPASSWD=Password KLPASSWDAREA=EXIT;DISPOLICY;UNINST /qn
-
-    #msiexec /i "C:\AudioCodes\Kaspersky\KES_12.2.0.462\exec\kes_win.msi" EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1|0] [SKIPPRODUCTCHECK=1|0] [SKIPPRODUCTUNINSTALL=1|0] [KLLOGIN=<имя пользователя> KLPASSWD=<пароль> KLPASSWDAREA=<область действия пароля>] [ENABLETRACES=1|0 TRACESLEVEL=<уровень трассировки>] [/qn]
-
-}
-catch {
-    Write-Host "Kaspersky Endpoint Security was NOT installed" -ForegroundColor RED
-    Write-Host "Check log. Open:" -ForegroundColor RED
-    Write-Host "C:\Windows\Temp\???????????.log" -ForegroundColor RED
-    [Environment]::NewLine
-}
-#>
 
 
 #TrueConf Client
+#$TcClientVersion = "8.3.2"
 try {
     #C:\AudioCodes\TrueConf\trueconf_room_$tcRoomVersion.exe
     $PathTCclientSetupExe = "C:\AudioCodes\TrueConf\trueconf_client_$TcClientVersion.exe"
@@ -897,7 +914,9 @@ Start-Sleep -Seconds 30
 PAUSE
 [Environment]::NewLine
 
+
 #TrueConf Room
+#$tcRoomVersion = "4.3.0.1341"
 try {
     #C:\AudioCodes\TrueConf\trueconf_room_$tcRoomVersion.exe
     $PathTCroomSetupExe = "C:\AudioCodes\TrueConf\trueconf_room_$tcRoomVersion.exe"
@@ -914,6 +933,7 @@ catch {
 Start-Sleep -Seconds 30
 PAUSE
 [Environment]::NewLine
+
 
 #Положить на Рабочий стол ярлык на Reg-File
 #$SourcePath = "C:\AudioCodes\TrueConf"
@@ -949,6 +969,7 @@ PAUSE
 
 
 #Chrome
+#$ChromeVersion = "ChromeStandaloneSetup64"
 try {
     #MsiExec.exe /i "C:\AudioCodes\TrueConf\trash\googlechromestandaloneenterprise64.msi" /qn /L*V C:\AudioCodes\Logs
     #MsiExec.exe /i "C:\AudioCodes\TrueConf\googlechromestandaloneenterprise64.msi" /qn /L*V "C:\AudioCodes\Logs"
@@ -1007,6 +1028,124 @@ PAUSE
 #
 
 
+
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720978
+#$KasperAgentVersion = "14.2.0.26967"
+#$KasperAgentVersion = "14.2.0.26967(3)"
+function KasperAgentInstallManual {
+    try {
+        #$PathKagentSetupExe = "D:\Programms\Kaspersky\NetAgent_$KasperAgentVersion\exec\installer.exe"
+         $PathKagentSetupExe = "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\exec\installer.exe"
+        #$PathKagentSetupExe = "D:\Programms\Kaspersky\NetAgent_$KasperAgentVersion\setup.exe"
+        #$PathKagentSetupExe = "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\setup.exe"
+
+        Start-Process -FilePath $PathKagentSetupExe -Verbose -ErrorAction Stop -ErrorVariable ErrKagentSetupExe
+
+        Write-Host "Finish installing of Kaspersky Agent in the separate dialog window and continue this script" -ForegroundColor Green
+        Write-Host "See photo in the folder" -ForegroundColor Green
+        Write-Host "Server    : t2ru-ksc-01" -ForegroundColor Green
+        Write-Host "port      : 14000" -ForegroundColor Green
+        Write-Host "SSL-port  : 13000" -ForegroundColor Green
+        Write-Host "UDP-port  : 15000" -ForegroundColor Green
+
+        #explorer.exe "D:\WorkPC"
+        explorer.exe "C:\AudioCodes\Kaspersky\NetAgent_photo"
+    }
+    catch {
+        Write-Host $ErrKagentSetupExe -ForegroundColor RED
+        Write-Host "Kaspersky Agent was NOT installed" -ForegroundColor RED
+        Write-Host "Check files in the directory:" -ForegroundColor RED
+        Write-Host $PathKagentSetupExe -ForegroundColor RED  
+    }
+    Start-Sleep -Seconds 45
+    PAUSE
+    [Environment]::NewLine
+}
+KasperAgentInstallManual
+
+
+function KasperAgentInstallAuto {
+    try {
+        #1.В CMD от имени администратора перейти в папку с Kaspersky Network Agent.msi (например NetAgent_10.5.1781(4)\exec)
+        #2. выполнить в CMD от имени администратора рабочей станции
+        #Для установки приложения в тихом режиме используйте ключи /s и /qn
+        #"Kaspersky Network Agent.msi"
+        msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\exec\Kaspersky Network Agent.msi" /qn /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
+        #громкая установка не работает:
+        #msiexec.exe /i "C:\AudioCodes\Kaspersky\NetAgent_$KasperAgentVersion\exec\Kaspersky Network Agent.msi" /l*vx c:\windows\temp\nag_inst.log SERVERADDRESS="t2ru-ksc-01.corp.tele2.ru" DONT_USE_ANSWER_FILE=1 PRIVACYPOLICY=1 EULA=1 CERTSELECTION=GetOnFirstConnection LAUNCHPROGRAM=1
+        Write-Host "Command for install Kaspersky Agent was run" -ForegroundColor Green
+        [Environment]::NewLine
+        Start-Sleep -Seconds 15
+        PAUSE    
+        
+    
+        <#Отключаю. Не срабатывает
+        #4. Проверить утилитой что связь появилась - отправить пакет пульс
+        $PathKasperPuls = "C:\Program Files (x86)\Kaspersky Lab\NetworkAgent\klrbtagt.exe"
+    
+        Write-Host "Check puls connection" -ForegroundColor Green
+        Start-Process -FilePath $PathKasperPuls
+        [Environment]::NewLine
+        #PAUSE
+        #>
+    
+        Write-Host "Kaspersky Agent was install successfully" -ForegroundColor Green
+        Write-Host "KES will install after some time automatically" -ForegroundColor Green
+        #Write-Host "Now you can install KES manually from:" -ForegroundColor Green
+        #Write-Host "C:\AudioCodes\Kaspersky\KES_12.2.0.462" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "Kaspersky was NOT installed" -ForegroundColor RED
+        Write-Host "Check log. Open:" -ForegroundColor RED
+        Write-Host "C:\Windows\Temp\nag_inst.log" -ForegroundColor RED
+    
+    }
+    [Environment]::NewLine
+    PAUSE
+    
+    #3.По желанию, проверить лог C:\Windows\Temp\nag_inst.log должен заканчиваться нулем
+    Write-Host "You can see Kaspersky Agent installing log" -ForegroundColor Green
+    #D:\Logs\ping.txt
+    C:\Windows\Temp\nag_inst.log
+    [Environment]::NewLine
+    PAUSE
+}
+#KasperAgentInstallAuto
+
+
+<#DISABLED. Kaspersky. Endpoint Security
+#Установится сам через какое-то время после установки Агента
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=44720938
+#https://wiki.tele2.ru/pages/viewpage.action?pageId=1121052
+#https://support.kaspersky.ru/kes12/123468
+try {
+    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup.exe
+
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
+
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pALLOWREBOOT=1
+    #setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 /pKSN=1 /pENABLETRACES=1 /pTRACESLEVEL=600 /s
+
+    #C:\AudioCodes\Kaspersky\KES_12.2.0.462\setup_kes.exe /pEULA=1 /pPRIVACYPOLICY=1 [/pKSN=1|0] [/pALLOWREBOOT=1] [/pSKIPPRODUCTCHECK=1] [/pSKIPPRODUCTUNINSTALL=1] [/pKLLOGIN=<user name> /pKLPASSWD=<password> /pKLPASSWDAREA=<password scope>] [/pENABLETRACES=1|0 /pTRACESLEVEL=<tracing scope>] [/s]
+
+
+    #msiexec /i <distribution kit name> EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1] [SKIPPRODUCTCHECK=1] [KLLOGIN=<user name> KLPASSWD=<password> KLPASSWDAREA=<password scope>] [ENABLETRACES=1|0 TRACESLEVEL=<tracing scope>] [/qn]
+
+    #msiexec /i kes_win.msi EULA=1 PRIVACYPOLICY=1 KSN=1 KLLOGIN=Admin KLPASSWD=Password KLPASSWDAREA=EXIT;DISPOLICY;UNINST /qn
+
+    #msiexec /i "C:\AudioCodes\Kaspersky\KES_12.2.0.462\exec\kes_win.msi" EULA=1 PRIVACYPOLICY=1 [KSN=1|0] [ALLOWREBOOT=1|0] [SKIPPRODUCTCHECK=1|0] [SKIPPRODUCTUNINSTALL=1|0] [KLLOGIN=<имя пользователя> KLPASSWD=<пароль> KLPASSWDAREA=<область действия пароля>] [ENABLETRACES=1|0 TRACESLEVEL=<уровень трассировки>] [/qn]
+
+}
+catch {
+    Write-Host "Kaspersky Endpoint Security was NOT installed" -ForegroundColor RED
+    Write-Host "Check log. Open:" -ForegroundColor RED
+    Write-Host "C:\Windows\Temp\???????????.log" -ForegroundColor RED
+    [Environment]::NewLine
+}
+#>
+
+
 #Вывод в консоль ip и mac
 #Get-NetIPAddress | Format-Table | Select-Object -Property * | Select IPAddress
 #Get-NetAdapter | Where-Object status -eq ‘up’ | Get-NetIPAddress -ea 0 | Format-Table ipaddress, AddressFamily
@@ -1035,10 +1174,25 @@ Write-Verbose "$NewLocalAdmin local user crated"
 Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdminLogin"
 Write-Verbose "$NewLocalAdminLogin added to the local administrator group"
 #>
-Rename-LocalUser -Name "Admin" -NewName $NewLocalAdminLogin -Verbose
-Disable-LocalUser -Name "Administrator" -Verbose
-Write-Host "Admin user renamed to $NewLocalAdminLogin" -ForegroundColor Green
-Write-Host "Administrator user was disabled" -ForegroundColor Green
+try {
+    Rename-LocalUser -Name "Admin" -NewName $NewLocalAdminLogin -Verbose -ErrorAction Stop -ErrorVariable ErrRenameAdmin
+    Write-Host "Admin user was renamed to $NewLocalAdminLogin" -ForegroundColor Green
+}
+catch {
+    Write-Host ErrRenameAdmin -ForegroundColor Red
+    Write-Host "Admin user was NOT renamed to $NewLocalAdminLogin" -ForegroundColor Red
+}
+[Environment]::NewLine
+PAUSE
+
+try {
+    Disable-LocalUser -Name "Administrator" -Verbose -ErrorAction Stop -ErrorVariable ErrDisAdmin
+    Write-Host "Administrator user was disabled" -ForegroundColor Green
+}
+catch {
+    Disable-LocalUser -Name "Администратор" -Verbose
+    Write-Host "Учётная запись Администратор деактивирована" -ForegroundColor Green
+}
 [Environment]::NewLine
 PAUSE
 
@@ -1060,8 +1214,8 @@ PAUSE
 #Write-Host "Далее можешь перезагрузить компьютер" -ForegroundColor Green
 #Write-Host "После чего можно будет приступить к настройке оболочек Teams и Trueconf Room" -ForegroundColor Green
 #Write-Host "After reboot connect via RDP as administrator and run second part of this script" -ForegroundColor Green
-Write-Host "After reboot you will autologon in TrueConf local user" -ForegroundColor Green
-Write-Host "And start TrueConf Room configuration" -ForegroundColor Green
+Write-Host "After reboot you will autologon in $loginTrueConf local user" -ForegroundColor Green
+Write-Host "And you will can configure TrueConf Room" -ForegroundColor Green
 [Environment]::NewLine
 PAUSE
 
